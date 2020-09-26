@@ -1,0 +1,46 @@
+
+<label>
+	Title
+	<input type="text" name="title"  />
+</label>
+<label>
+	Slug
+	<input type="text" name="slug"  />
+</label>
+<label>
+	Short title
+	<input type="text" name="shortTitle"  />
+</label>
+<label>
+	Publication date
+	<input type="date" name="pubDate"  />
+</label>
+<label>
+	Highlighted post
+	<select name="highlighted">
+		<option value="no">no</option>
+		<option value="yes">yes</option>
+	</select>
+</label>
+<label>
+	Thumbnail
+	<input type="text" class="picture-input-field" name="thumbnail" data-image-dir="/img/news"  />
+</label>
+<label>
+	Page image
+	<input type="text" class="picture-input-field" name="pageImg" data-image-dir="/img/news"  />
+</label>
+
+<label>
+	Short summary
+	<textarea class="" rows="7" type="text" name="shortSummary" ></textarea>
+</label>
+
+<label>
+	Description
+	<textarea class="ckeditor" rows="7" type="text" name="desc" ></textarea>
+</label>
+<label>
+	Full Text
+	<textarea class="ckeditor" rows="7" type="text" name="fullText" ></textarea>
+</label>

@@ -1,0 +1,13 @@
+<tr>
+	<td>
+		<a href="__$globals.dreck.editPrefix____this._id__/edit">__this.title__</a>
+	</td>
+	<td>
+		__this.pubDate::humanDate__
+	</td>
+	<td class="actions">
+		<form class="delete" method="post" action="__$globals.dreck.editPrefix____this._id__/delete" onsubmit="return confirm('Delete?')"	>
+			<button type="submit">&times;</button>
+		</form>
+	</td>
+</tr>

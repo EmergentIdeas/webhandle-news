@@ -1,0 +1,5 @@
+
+<label>
+	Name
+	<input type="text" name="name" required="required" />
+</label>
