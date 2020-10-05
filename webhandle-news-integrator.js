@@ -10,8 +10,16 @@ const newsDreck = require('./handles/news-dreck')
 const newsTypesDreck = require('./handles/news-types-dreck')
 
 
+function makeCategoryFilter(category) {
+	return  item => {
+		return item.highlighted == 'yes'
+	}
+}
 
-let integrate = function(dbName) {
+
+let integrate = function(dbName, options) {
+	options = options || {}
+
 	if(!webhandle.dbs[dbName].collections.news) {
 		webhandle.dbs[dbName].collections.news = webhandle.dbs[dbName].db.collection('news')
 	}
@@ -74,14 +82,36 @@ let integrate = function(dbName) {
 			pageName = 'index'
 		}
 
-		let filterNews
-		if(pageName == 'index') {
-			filterNews = item => {
-				return item.highlighted == 'yes'
-			}
-		}
 
 		if(res.locals.page.news) {
+			let filters = {
+
+			}
+			if(Array.isArray(res.locals.page.news)) {
+				for(let category of res.locals.page.news) {
+					if(options.filters && options.filters[category]) {
+						filters[category] = options.filters[category]
+					}
+					else {
+						if(category == 'all') {
+							filters.all = item => true
+						}
+						else {
+							filters[category] = makeCategoryFilter(category)
+						}
+					}
+				}
+			}
+			else {
+				if(pageName == 'index') {
+					filters.highlighted = item => {
+						return item.highlighted == 'yes'
+					}
+				}
+	
+			}
+	
+
 			webhandle.dbs[dbName].collections.news.find({}).toArray((err, result) => {
 				if(err) {
 					log.error(err)
@@ -101,8 +131,8 @@ let integrate = function(dbName) {
 						items: result
 					}
 
-					if(filterNews) {
-						res.locals.webhandlenews.items = res.locals.webhandlenews.items.filter(filterNews)
+					for(let key of Object.keys(filters)) {
+						res.locals.webhandlenews[key] = res.locals.webhandlenews.items.filter(filters[key])
 					}
 
 					res.locals.webhandlenews.items.forEach(item => {
