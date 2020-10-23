@@ -1,6 +1,9 @@
 const Dreck = require('dreck')
 let wh = global.webhandle
 const moment = require('moment')
+const _ = require('underscore')
+const simplePropertyInjector = require('dreck/binders/simple-property-injector')
+
 
 const addCallbackToPromise = require('dreck/add-callback-to-promise')
 
@@ -9,14 +12,19 @@ class NewsTypesDreck extends Dreck {
 		super(options)
 		
 		
-		this.templatePrefix = '/news-types/'
-		
-		let self = this
-		
-		this.injectors.push((req, focus, next) => {
-			
-
-				next()
+		let curDreck = this
+		_.extend(this, 
+			{
+				templatePrefix: 'news-types/',
+				locals: {
+					pretemplate: 'app_pre',
+					posttemplate: 'app_post'
+				},
+				injectors: [
+					(req, focus, next) => {
+						simplePropertyInjector(req, focus, curDreck.bannedInjectMembers, next)
+					}
+				]
 			}
 		)
 

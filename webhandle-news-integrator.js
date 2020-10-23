@@ -9,10 +9,18 @@ const createSlug = require('./tools/create-slug')
 const newsDreck = require('./handles/news-dreck')
 const newsTypesDreck = require('./handles/news-types-dreck')
 
+const NewsService = require('./services/news-service')
+
 
 function makeCategoryFilter(category) {
+	if('highlighted' == category) {
+		return  item => {
+			return item.highligted == "yes"
+		}
+	}
+
 	return  item => {
-		return item.highlighted == 'yes'
+		return item.tag == category
 	}
 }
 
@@ -27,6 +35,15 @@ let integrate = function(dbName, options) {
 		webhandle.dbs[dbName].collections.newstypes = webhandle.dbs[dbName].db.collection('newstypes')
 	}
 	
+	webhandle.services.newsService = new NewsService({
+		'news': webhandle.dbs[dbName].collections['news'],
+		'newstypes': webhandle.dbs[dbName].collections['newstypes']
+	})
+	
+
+
+
+
 	let news = new newsDreck({
 		mongoCollection: webhandle.dbs[dbName].collections.news,
 	})

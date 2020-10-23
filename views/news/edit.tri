@@ -1,7 +1,7 @@
 
 __::$pretemplate__
 <h1>__dreck.title__</h1>
-<form method="post" action="__dreck.editUrl__" class="news-form">
+<form method="post" action="__dreck.editUrl__" class="news-form"  encType="multipart/form-data">
 __::./fields__
 <button type="submit">Save</button>
 </form>

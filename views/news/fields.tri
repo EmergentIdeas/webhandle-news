@@ -23,6 +23,27 @@
 	</select>
 </label>
 <label>
+	News type
+	<select name="tag">
+		<option value="">none</option>
+		__$globals.newsTypes::./option__
+	</select>
+</label>
+<label>
+	Document title
+	<input type="text" name="documentTitle"  />
+</label>
+<label>
+	Document Link
+	<input type="text" name="link"  />
+</label>
+__focus.link??'<a href="' + focus.link + '" target="_blank">current file</a><br/><br/>'__
+<label>
+	New document (leave blank to keep current document)
+	<input type="file" name="newdoc"  />
+</label>
+
+<label>
 	Thumbnail
 	<input type="text" class="picture-input-field" name="thumbnail" data-image-dir="/img/news"  />
 </label>
