@@ -6,6 +6,7 @@ const _ = require('underscore')
 const simplePropertyInjector = require('dreck/binders/simple-property-injector')
 const createSlug = require('../tools/create-slug')
 
+const addCallbackToPromise = require('add-callback-to-promise')
 
 class NewsDreck extends Dreck {
 	constructor(options) {
@@ -65,6 +66,24 @@ class NewsDreck extends Dreck {
 			return super.editGET(req, res, next)
 		})
 	}
+	
+	sort(req, res, focus, callback) {
+		let p = new Promise((resolve, reject) => {
+			if(Array.isArray(focus)) {
+				focus = focus.sort((one, two) => {
+					try {
+						return new Date(one.pubDate) < new Date(two.pubDate) ? 1 : -1
+					}
+					catch(e) {
+						return 0
+					}
+				})
+			}
+			resolve(focus)
+		})		
+		return addCallbackToPromise(p, callback)
+	}
+	
 
 }
 

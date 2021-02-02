@@ -137,7 +137,7 @@ let integrate = function(dbName, options) {
 					result = result.sort((one, two) => {
 						try {
 							
-							return new Date(one.pubDate) < new Date(two.pubDate)
+							return new Date(one.pubDate) < new Date(two.pubDate) ? 1 : -1
 						}
 						catch(e) {
 							return 0
