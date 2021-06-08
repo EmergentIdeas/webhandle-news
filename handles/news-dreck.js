@@ -56,14 +56,58 @@ class NewsDreck extends Dreck {
 	newGET(req, res, next) {
 		webhandle.services.newsService.fetchNewsTypes({}, (err, results) => {
 			res.locals.newsTypes = results
-			return super.newGET(req, res, next)
+			
+			let p
+			if(webhandle.services.pageEditor.getPageFiles) {
+				p = webhandle.services.pageEditor.getPageFiles()
+			}
+			else {
+				p = Promise.resolve([])
+			}
+			
+			p.then(pages => {
+				res.locals.allPages = pages.map(file => {
+					let parts = file.split('.')
+					parts.pop()
+					return parts.join('.')
+				}).map(file => {
+					return file.substring(1)
+				})
+
+				return super.newGET(req, res, next)
+			})
+			.catch(err => {
+				return super.newGET(req, res, next)
+			})
 		})
 	}
 	
 	editGET(req, res, next) {
 		webhandle.services.newsService.fetchNewsTypes({}, (err, results) => {
 			res.locals.newsTypes = results
-			return super.editGET(req, res, next)
+			
+			let p
+			if(webhandle.services.pageEditor.getPageFiles) {
+				p = webhandle.services.pageEditor.getPageFiles()
+			}
+			else {
+				p = Promise.resolve([])
+			}
+			
+			p.then(pages => {
+				res.locals.allPages = pages.map(file => {
+					let parts = file.split('.')
+					parts.pop()
+					return parts.join('.')
+				}).map(file => {
+					return file.substring(1)
+				})
+
+				return super.editGET(req, res, next)
+			})
+			.catch(err => {
+				return super.edtiGET(req, res, next)
+			})
 		})
 	}
 	

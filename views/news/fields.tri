@@ -44,6 +44,14 @@ __focus.link??'<a href="' + focus.link + '" target="_blank">current file</a><br/
 </label>
 
 <label>
+	Content page (page to use for full information)
+	<select name="contentPage"  >
+		<option value="">Do not use content page</option>
+		__allPages::./page-option__	
+	</select>
+</label>
+
+<label>
 	Thumbnail
 	<input type="text" class="picture-input-field" name="thumbnail" data-image-dir="/img/news"  />
 </label>

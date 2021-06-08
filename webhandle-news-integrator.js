@@ -79,8 +79,13 @@ let integrate = function(dbName, options) {
 						}
 						res.locals.page.title = item.title
 						res.locals.newsTitle = item.title
-
-						req.url = '/news-item-page'
+						
+						if(item.contentPage) {
+							req.url = '/' + item.contentPage
+						}
+						else {
+							req.url = '/news-item-page'
+						}
 						next()
 						return
 					}
