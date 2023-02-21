@@ -27,6 +27,12 @@ function makeCategoryFilter(category) {
 
 let integrate = function(dbName, options) {
 	options = options || {}
+	if(!options.newsDreckOptions) {
+		options.newsDreckOptions = {}
+	}
+	if(!options.newsTypesDreckOptions) {
+		options.newsTypesDreckOptions = {}
+	}
 
 	if(!webhandle.dbs[dbName].collections.news) {
 		webhandle.dbs[dbName].collections.news = webhandle.dbs[dbName].db.collection('news')
@@ -44,14 +50,14 @@ let integrate = function(dbName, options) {
 
 
 
-	let news = new newsDreck({
+	let news = new newsDreck(Object.assign({
 		mongoCollection: webhandle.dbs[dbName].collections.news,
-	})
+	}, options.newsDreckOptions))
 	let newsRouter = news.addToRouter(express.Router())
 
-	let newsTypes = new newsTypesDreck({
+	let newsTypes = new newsTypesDreck(Object.assign({
 		mongoCollection: webhandle.dbs[dbName].collections.newstypes,
-	})
+	}, options.newsTypesDreckOptions))
 	let typesRouter = newsTypes.addToRouter(express.Router())
 
 	let combinedRouter = express.Router()
@@ -72,7 +78,7 @@ let integrate = function(dbName, options) {
 			else if(result){
 				for(let item of result) {
 					let slug = item.slug || createSlug(item.title)
-					if(slug == req.params.slug) {
+					if(slug == req.params.slug || item._id.toString() == req.params.slug) {
 						res.locals.newsItem = item
 						if(!res.locals.page) {
 							res.locals.page = {}

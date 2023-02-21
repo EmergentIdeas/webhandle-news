@@ -26,6 +26,7 @@ class NewsTypesDreck extends Dreck {
 					}
 				]
 			}
+			, options
 		)
 
 	}

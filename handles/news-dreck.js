@@ -38,6 +38,7 @@ class NewsDreck extends Dreck {
 					}
 				]
 			}
+			, options
 		)
 	}
 	
