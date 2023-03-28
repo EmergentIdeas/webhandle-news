@@ -1,5 +1,10 @@
-
-<label>
-	Name
-	<input type="text" name="name" required="required" />
-</label>
+<div class="news-type-form-fields">
+	<label>
+		Name
+		<input type="text" name="name" required="required" />
+	</label>
+	<label>
+		Slug (use only characters lowercase a - z, numbers, and the -)
+		<input type="text" name="slug" pattern="[a-z0-9-]+" />
+	</label>
+</div>

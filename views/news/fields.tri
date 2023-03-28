@@ -4,8 +4,8 @@
 	<input type="text" name="title"  />
 </label>
 <label>
-	Slug
-	<input type="text" name="slug"  />
+	Slug (use only characters lowercase a - z, numbers, and the -)
+	<input type="text" name="slug" pattern="[a-z0-9-]+" />
 </label>
 <label>
 	Short title
@@ -22,13 +22,12 @@
 		<option value="yes">yes</option>
 	</select>
 </label>
-<label>
+<div>
 	News type
-	<select name="tag">
-		<option value="">none</option>
-		__$globals.newsTypes::./option__
-	</select>
-</label>
+	<div class="news-type-options">
+		__$globals.newsTypes::./check-option__
+	</div>
+</div>
 <label>
 	Document title
 	<input type="text" name="documentTitle"  />

@@ -4,8 +4,6 @@ const usersSetup = require('webhandle-users/integrate-with-webhandle')
 const path = require('path')
 const express = require('express');
 
-const createSlug = require('./tools/create-slug')
-
 const newsDreck = require('./handles/news-dreck')
 const newsTypesDreck = require('./handles/news-types-dreck')
 
@@ -41,9 +39,13 @@ let integrate = function(dbName, options) {
 		webhandle.dbs[dbName].collections.newstypes = webhandle.dbs[dbName].db.collection('newstypes')
 	}
 	
-	webhandle.services.newsService = new NewsService({
-		'news': webhandle.dbs[dbName].collections['news'],
-		'newstypes': webhandle.dbs[dbName].collections['newstypes']
+	let newsService = webhandle.services.newsService = new NewsService({
+		serviceName: 'newsService',
+		collections: {
+			default: webhandle.dbs[dbName].collections['news'],
+			'news': webhandle.dbs[dbName].collections['news'],
+			'newstypes': webhandle.dbs[dbName].collections['newstypes']
+		}
 	})
 	
 
@@ -52,11 +54,13 @@ let integrate = function(dbName, options) {
 
 	let news = new newsDreck(Object.assign({
 		mongoCollection: webhandle.dbs[dbName].collections.news,
+		newsService: newsService
 	}, options.newsDreckOptions))
 	let newsRouter = news.addToRouter(express.Router())
 
 	let newsTypes = new newsTypesDreck(Object.assign({
 		mongoCollection: webhandle.dbs[dbName].collections.newstypes,
+		newsService: newsService
 	}, options.newsTypesDreckOptions))
 	let typesRouter = newsTypes.addToRouter(express.Router())
 
@@ -104,7 +108,7 @@ let integrate = function(dbName, options) {
 	
 	webhandle.addTemplateDir(path.join(webhandle.projectRoot, 'node_modules/@dankolz/webhandle-news/views'))
 
-	webhandle.pageServer.preRun.push((req, res, next) => {
+	webhandle.pageServer.preRun.push(async (req, res, next) => {
 		let pageName = req.path
 		if(!pageName || pageName == '/') {
 			pageName = 'index'
@@ -139,38 +143,37 @@ let integrate = function(dbName, options) {
 	
 			}
 	
+			let newsItems = await newsService.fetchNewsItems()
+			newsItems = newsService.sortNewsByDate(newsItems)
+			res.locals.webhandlenews = {
+				items: result
+			}
 
-			webhandle.dbs[dbName].collections.news.find({}).toArray((err, result) => {
-				if(err) {
-					log.error(err)
+			for(let key of Object.keys(filters)) {
+				res.locals.webhandlenews[key] = res.locals.webhandlenews.items.filter(filters[key])
+			}
+			next()
+
+		}
+		if(res.locals.page.newsByTagSlug) {
+			let slugs = res.locals.page.newsByTagSlug
+			if(typeof slugs === 'string') {
+				slugs = [slugs]
+			}
+			let result = res.locals.newsByTagSlug = {}
+			let promises = []
+			if(Array.isArray(slugs)) {
+				for(const slug of slugs) {
+					promises.push(newsService.fetchArticlesByType(slug).then(items => {
+						result[slug] = {
+							items: newsService.sortNewsByDate(items)
+						}
+					}))
 				}
-				else if(result){
-					result = result.sort((one, two) => {
-						try {
-							
-							return new Date(one.pubDate) < new Date(two.pubDate) ? 1 : -1
-						}
-						catch(e) {
-							return 0
-						}
-						
-					})
-					res.locals.webhandlenews = {
-						items: result
-					}
-
-					for(let key of Object.keys(filters)) {
-						res.locals.webhandlenews[key] = res.locals.webhandlenews.items.filter(filters[key])
-					}
-
-					res.locals.webhandlenews.items.forEach(item => {
-						if(!item.slug) {
-							item.slug = createSlug(item.title)
-						}
-					})
-				}
-				next()
-			})
+				Promise.all(promises).then(() => {
+					next()
+				})
+			}
 		}
 		else {
 			next()

@@ -4,6 +4,8 @@ const path = require('path')
 const fs = require('fs')
 const _ = require('underscore')
 const simplePropertyInjector = require('dreck/binders/simple-property-injector')
+const createValuedCheckboxInjector = require('dreck/binders/create-valued-checkbox-injector')
+
 const createSlug = require('../tools/create-slug')
 
 const addCallbackToPromise = require('add-callback-to-promise')
@@ -23,6 +25,7 @@ class NewsDreck extends Dreck {
 					(req, focus, next) => {
 						simplePropertyInjector(req, focus, curDreck.bannedInjectMembers, next)
 					},
+					createValuedCheckboxInjector('tag'),
 					(req, focus, next) => {
 						if(!focus.slug) {
 							focus.slug = createSlug(focus.title)
@@ -52,6 +55,14 @@ class NewsDreck extends Dreck {
 	
 	listTitle(items) {
 		return 'List News Items'
+	}
+	addAdditionalFormInformation(focus, req, res, callback) {
+		let p = new Promise(async (resolve, reject) => {
+			res.locals.newsTypes = await this.newsService.fetchNewsTypes()
+			resolve(focus)
+		})
+		
+		return addCallbackToPromise(p, callback)
 	}
 
 	newGET(req, res, next) {

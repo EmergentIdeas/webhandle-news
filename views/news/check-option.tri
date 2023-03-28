@@ -1,0 +1,3 @@
+<label>
+	<input type="checkbox" name="tag" value="__this._id__" /> __this.name__
+</label>
