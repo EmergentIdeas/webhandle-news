@@ -55,8 +55,14 @@ class NewsService extends MongodbDataService {
 			return []
 		}
 	}
-	
-	
+
+	isPublished(item) {
+		return !item.pubStatus || item.pubStatus !== 'draft'
+	}
+
+	allowOnlyPublishedItems(items) {
+		return items.filter(item => this.isPublished(item))
+	}
 	
 	sortNewsByDate(newsItems) {
 		return newsItems.sort((one, two) => {

@@ -16,6 +16,13 @@
 	<input type="date" name="pubDate"  />
 </label>
 <label>
+	Publication Status
+	<select name="pubStatus">
+		<option value="published">published</option>
+		<option value="draft">draft</option>
+	</select>
+</label>
+<label>
 	Highlighted post
 	<select name="highlighted">
 		<option value="no">no</option>

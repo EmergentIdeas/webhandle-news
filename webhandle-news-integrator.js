@@ -144,7 +144,9 @@ let integrate = function(dbName, options) {
 			}
 	
 			let newsItems = await newsService.fetchNewsItems()
+			
 			newsItems = newsService.sortNewsByDate(newsItems)
+			newsItems = newsService.allowOnlyPublishedItems(newsItems)
 			res.locals.webhandlenews = {
 				items: result
 			}
@@ -166,7 +168,7 @@ let integrate = function(dbName, options) {
 				for(const slug of slugs) {
 					promises.push(newsService.fetchArticlesByType(slug).then(items => {
 						result[slug] = {
-							items: newsService.sortNewsByDate(items)
+							items: newsService.allowOnlyPublishedItems(newsService.sortNewsByDate(items))
 						}
 					}))
 				}
