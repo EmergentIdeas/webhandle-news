@@ -31,6 +31,9 @@ let integrate = function(dbName, options) {
 	if(!options.newsTypesDreckOptions) {
 		options.newsTypesDreckOptions = {}
 	}
+	if('templateDir' in options == false) {
+		options.templateDir = 'node_modules/@dankolz/webhandle-news/views'
+	}
 
 	if(!webhandle.dbs[dbName].collections.news) {
 		webhandle.dbs[dbName].collections.news = webhandle.dbs[dbName].db.collection('news')
@@ -106,7 +109,9 @@ let integrate = function(dbName, options) {
 	})
 
 	
-	webhandle.addTemplateDir(path.join(webhandle.projectRoot, 'node_modules/@dankolz/webhandle-news/views'))
+	if(options.templateDir) {
+		webhandle.addTemplateDir(path.join(webhandle.projectRoot, options.templateDir))
+	}
 
 	webhandle.pageServer.preRun.push(async (req, res, next) => {
 		let pageName = req.path
@@ -148,7 +153,7 @@ let integrate = function(dbName, options) {
 			newsItems = newsService.sortNewsByDate(newsItems)
 			newsItems = newsService.allowOnlyPublishedItems(newsItems)
 			res.locals.webhandlenews = {
-				items: result
+				items: newsItems
 			}
 
 			for(let key of Object.keys(filters)) {
@@ -157,7 +162,7 @@ let integrate = function(dbName, options) {
 			next()
 
 		}
-		if(res.locals.page.newsByTagSlug) {
+		else if(res.locals.page.newsByTagSlug) {
 			let slugs = res.locals.page.newsByTagSlug
 			if(typeof slugs === 'string') {
 				slugs = [slugs]
