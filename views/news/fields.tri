@@ -1,11 +1,11 @@
 
 <label>
 	Title
-	<input type="text" name="title"  />
+	<input type="text" name="title" required />
 </label>
 <label>
 	Slug (use only characters lowercase a - z, numbers, and the -)
-	<input type="text" name="slug" pattern="[a-z0-9-]+" />
+	<input type="text" name="slug" pattern="[a-z0-9\-]+" required />
 </label>
 <label>
 	Short title
