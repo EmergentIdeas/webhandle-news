@@ -53,6 +53,23 @@ let integrate = function(dbName, options) {
 	
 
 
+	async function resolveNewsTypes(newsItems) {
+		let newsTypes = await newsService.fetchNewsTypes()
+		let newsTypesByDBId = newsTypes.reduce((acc, type) => {
+			acc[type._id] = type
+			return acc
+		}, {})
+		
+		for(let news of newsItems) {
+			if(news.tag && Array.isArray(news.tag)) {
+				news.resolvedTag = news.tag.map(tag => {
+					return newsTypesByDBId[tag] || tag
+				})
+			}
+		}
+		
+		return {newsTypes, newsTypesByDBId}
+	}
 
 
 	let news = new newsDreck(Object.assign({
@@ -78,7 +95,7 @@ let integrate = function(dbName, options) {
 	webhandle.routers.primary.use(securednewsRouter)
 	
 	webhandle.routers.primary.get('/news/:slug', (req, res, next) => {
-		webhandle.dbs[dbName].collections.news.find({}).toArray((err, result) => {
+		webhandle.dbs[dbName].collections.news.find({}).toArray(async (err, result) => {
 			if(err) {
 				log.error(err)
 			}
@@ -86,12 +103,16 @@ let integrate = function(dbName, options) {
 				for(let item of result) {
 					let slug = item.slug || createSlug(item.title)
 					if(slug == req.params.slug || item._id.toString() == req.params.slug) {
+						
+						let {newsTypes, newsTypesByDBId} = await resolveNewsTypes([item])
 						res.locals.newsItem = item
 						if(!res.locals.page) {
 							res.locals.page = {}
 						}
 						res.locals.page.title = item.title
 						res.locals.newsTitle = item.title
+						res.locals.newsTypes = newsTypes
+						res.locals.newsTypeByDBId = newsTypesByDBId
 						
 						if(item.contentPage) {
 							req.url = '/' + item.contentPage
@@ -147,13 +168,15 @@ let integrate = function(dbName, options) {
 				}
 	
 			}
-	
 			let newsItems = await newsService.fetchNewsItems()
+			let {newsTypes, newsTypesByDBId} = await resolveNewsTypes(newsItems)
 			
 			newsItems = newsService.sortNewsByDate(newsItems)
 			newsItems = newsService.allowOnlyPublishedItems(newsItems)
 			res.locals.webhandlenews = {
 				items: newsItems
+				, newsTypes: newsTypes
+				, newsTypeByDBId: newsTypesByDBId
 			}
 
 			for(let key of Object.keys(filters)) {
