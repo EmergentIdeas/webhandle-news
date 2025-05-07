@@ -59,6 +59,9 @@ class NewsDreck extends Dreck {
 	addAdditionalFormInformation(focus, req, res, callback) {
 		let p = new Promise(async (resolve, reject) => {
 			res.locals.newsTypes = await this.newsService.fetchNewsTypes()
+			if(this.fetchAuthor) {
+				res.locals.authors = await this.fetchAuthor()
+			}
 			resolve(focus)
 		})
 		

@@ -1,81 +1,80 @@
 
-<label>
+<div class="grid">
+<label class="xs7">
 	Title
 	<input type="text" name="title" required />
 </label>
-<label>
+<label class="xs5">
 	Slug (use only characters lowercase a - z, numbers, and the -)
 	<input type="text" name="slug" pattern="[a-z0-9\-]+" required />
 </label>
-<label>
+<label class="xs4">
 	Short title
 	<input type="text" name="shortTitle"  />
 </label>
-<label>
+<label class="xs2">
 	Publication date
 	<input type="date" name="pubDate"  />
 </label>
-<label>
+<label class="xs3">
 	Publication Status
 	<select name="pubStatus">
 		<option value="published">published</option>
 		<option value="draft">draft</option>
 	</select>
 </label>
-<label>
+<label class="xs3">
 	Highlighted post
 	<select name="highlighted">
 		<option value="no">no</option>
 		<option value="yes">yes</option>
 	</select>
 </label>
-<div>
+<div class="xs4">
 	News type
 	<div class="news-type-options">
 		__$globals.newsTypes::./check-option__
 	</div>
 </div>
-<label>
-	Document title
-	<input type="text" name="documentTitle"  />
-</label>
-<label>
-	Document Link
-	<input type="text" name="link"  />
-</label>
-__focus.link??'<a href="' + focus.link + '" target="_blank">current file</a><br/><br/>'__
-<label>
-	New document (leave blank to keep current document)
-	<input type="file" name="newdoc"  />
-</label>
-
-<label>
+<label class="xs4">
 	Content page (page to use for full information)
 	<select name="contentPage"  >
 		<option value="">Do not use content page</option>
 		__allPages::./page-option__	
 	</select>
 </label>
+<label class="xs4">
+__$globals.authors && $globals.authors.length > 0??this::./author-field__
+</label>
 
-<label>
+<label class="xs4">
 	Thumbnail
 	<input type="text" class="picture-input-field" name="thumbnail" data-image-dir="/img/news"  />
 </label>
-<label>
+<label class="xs4">
 	Page image
 	<input type="text" class="picture-input-field" name="pageImg" data-image-dir="/img/news"  />
 </label>
+<label class="xs4">
+	Social image
+	<input type="text" class="picture-input-field" name="socialImg" data-image-dir="/img/news"  />
+</label>
 
-<label>
+<label class="xs6">
 	Short summary
 	<textarea class="" rows="7" type="text" name="shortSummary" ></textarea>
 </label>
+<label class="xs6">
+	Social media summary
+	<textarea class="" rows="7" type="text" name="socialMediaSummary" ></textarea>
+</label>
 
-<label>
+<label class="xs12">
 	Description
 	<textarea class="ckeditor" rows="7" type="text" name="desc" ></textarea>
 </label>
-<label>
+<label class="xs12">
 	Full Text
 	<textarea class="ckeditor" rows="7" type="text" name="fullText" ></textarea>
 </label>
+</div>

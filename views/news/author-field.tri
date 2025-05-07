@@ -1,0 +1,6 @@
+
+	Author
+	<select name="authorId">
+		<option value="">-- no author specified --</option>
+		__$globals.authors::./author-option__
+	</select>

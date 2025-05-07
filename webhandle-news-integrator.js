@@ -1,6 +1,4 @@
 const webhandle = require('webhandle')
-const commingle = require('commingle')
-const usersSetup = require('webhandle-users/integrate-with-webhandle')
 const path = require('path')
 const express = require('express');
 
@@ -8,21 +6,19 @@ const newsDreck = require('./handles/news-dreck')
 const newsTypesDreck = require('./handles/news-types-dreck')
 
 const NewsService = require('./services/news-service')
+const createPagePrerun = require('./services/page-prerun-listener')
 
-
-function makeCategoryFilter(category) {
-	if('highlighted' == category) {
-		return  item => {
-			return item.highligted == "yes"
-		}
-	}
-
-	return  item => {
-		return item.tag == category
-	}
-}
-
-
+/**
+ * 
+ * @param {*} dbName 
+ * @param {object} options 
+ * @param {string} options.templateDir
+ * @param {object} options.newsDreckOptions
+ * @param {object} options.newsTypesDreckOptions
+ * @param {function} options.fetchAuthor An async function which takes one argument, the id of the author,
+ * and returns an array of authors. If no id is passed, all authors are returned. Each author must have
+ * a `name` and `id` attribute.
+ */
 let integrate = function(dbName, options) {
 	options = options || {}
 	if(!options.newsDreckOptions) {
@@ -42,46 +38,34 @@ let integrate = function(dbName, options) {
 		webhandle.dbs[dbName].collections.newstypes = webhandle.dbs[dbName].db.collection('newstypes')
 	}
 	
-	let newsService = webhandle.services.newsService = new NewsService({
+	let newsService = webhandle.services.news = webhandle.services.newsService = new NewsService({
 		serviceName: 'newsService',
 		collections: {
 			default: webhandle.dbs[dbName].collections['news'],
 			'news': webhandle.dbs[dbName].collections['news'],
 			'newstypes': webhandle.dbs[dbName].collections['newstypes']
 		}
+		, fetchAuthor: options.fetchAuthor
 	})
 	
 
-
-	async function resolveNewsTypes(newsItems) {
-		let newsTypes = await newsService.fetchNewsTypes()
-		let newsTypesByDBId = newsTypes.reduce((acc, type) => {
-			acc[type._id] = type
-			return acc
-		}, {})
-		
-		for(let news of newsItems) {
-			if(news.tag && Array.isArray(news.tag)) {
-				news.resolvedTag = news.tag.map(tag => {
-					return newsTypesByDBId[tag] || tag
-				})
-			}
-		}
-		
-		return {newsTypes, newsTypesByDBId}
+	if(!webhandle.drecks) {
+		webhandle.drecks = {}
 	}
-
 
 	let news = new newsDreck(Object.assign({
 		mongoCollection: webhandle.dbs[dbName].collections.news,
 		newsService: newsService
+		, fetchAuthor: options.fetchAuthor
 	}, options.newsDreckOptions))
+	webhandle.drecks.news = news
 	let newsRouter = news.addToRouter(express.Router())
 
 	let newsTypes = new newsTypesDreck(Object.assign({
 		mongoCollection: webhandle.dbs[dbName].collections.newstypes,
 		newsService: newsService
 	}, options.newsTypesDreckOptions))
+	webhandle.drecks.newsTypes = newsTypes
 	let typesRouter = newsTypes.addToRouter(express.Router())
 
 	let combinedRouter = express.Router()
@@ -104,7 +88,7 @@ let integrate = function(dbName, options) {
 					let slug = item.slug || createSlug(item.title)
 					if(slug == req.params.slug || item._id.toString() == req.params.slug) {
 						
-						let {newsTypes, newsTypesByDBId} = await resolveNewsTypes([item])
+						let {newsTypes, newsTypesByDBId} = await newsService.resolveAdditionalInformation([item])
 						res.locals.newsItem = item
 						if(!res.locals.page) {
 							res.locals.page = {}
@@ -112,6 +96,13 @@ let integrate = function(dbName, options) {
 						res.locals.page.title = item.title
 						res.locals.newsTitle = item.title
 						res.locals.newsTypes = newsTypes
+						newsTypes.sort((one, two) => {
+							let o = (one.name || '').toLowerCase()
+							let t = (two.name || '').toLowerCase()
+							return o.localeCompare(t)
+						})
+						
+
 						res.locals.newsTypeByDBId = newsTypesByDBId
 						
 						if(item.contentPage) {
@@ -134,81 +125,7 @@ let integrate = function(dbName, options) {
 		webhandle.addTemplateDir(path.join(webhandle.projectRoot, options.templateDir))
 	}
 
-	webhandle.pageServer.preRun.push(async (req, res, next) => {
-		let pageName = req.path
-		if(!pageName || pageName == '/') {
-			pageName = 'index'
-		}
-
-
-		if(res.locals.page.news) {
-			let filters = {
-
-			}
-			if(Array.isArray(res.locals.page.news)) {
-				for(let category of res.locals.page.news) {
-					if(options.filters && options.filters[category]) {
-						filters[category] = options.filters[category]
-					}
-					else {
-						if(category == 'all') {
-							filters.all = item => true
-						}
-						else {
-							filters[category] = makeCategoryFilter(category)
-						}
-					}
-				}
-			}
-			else {
-				if(pageName == 'index') {
-					filters.highlighted = item => {
-						return item.highlighted == 'yes'
-					}
-				}
-	
-			}
-			let newsItems = await newsService.fetchNewsItems()
-			let {newsTypes, newsTypesByDBId} = await resolveNewsTypes(newsItems)
-			
-			newsItems = newsService.sortNewsByDate(newsItems)
-			newsItems = newsService.allowOnlyPublishedItems(newsItems)
-			res.locals.webhandlenews = {
-				items: newsItems
-				, newsTypes: newsTypes
-				, newsTypeByDBId: newsTypesByDBId
-			}
-
-			for(let key of Object.keys(filters)) {
-				res.locals.webhandlenews[key] = res.locals.webhandlenews.items.filter(filters[key])
-			}
-			next()
-
-		}
-		else if(res.locals.page.newsByTagSlug) {
-			let slugs = res.locals.page.newsByTagSlug
-			if(typeof slugs === 'string') {
-				slugs = [slugs]
-			}
-			let result = res.locals.newsByTagSlug = {}
-			let promises = []
-			if(Array.isArray(slugs)) {
-				for(const slug of slugs) {
-					promises.push(newsService.fetchArticlesByType(slug).then(items => {
-						result[slug] = {
-							items: newsService.allowOnlyPublishedItems(newsService.sortNewsByDate(items))
-						}
-					}))
-				}
-				Promise.all(promises).then(() => {
-					next()
-				})
-			}
-		}
-		else {
-			next()
-		}
-	})
+	webhandle.pageServer.preRun.push(createPagePrerun(options))
 	
 }
 

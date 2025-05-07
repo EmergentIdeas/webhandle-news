@@ -1,6 +1,6 @@
 {
   "name": "@dankolz/webhandle-news",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "dreck": "^1.0.20",
     "ei-pic-browser": "^1.0.7",
     "filter-log": "0.0.5",
-    "webhandle-users": "^1.0.5"
+    "webhandle-users": "^1.0.9"
   },
   "devDependencies": {
     "commingle": "0.0.4",
