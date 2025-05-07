@@ -93,7 +93,15 @@ let integrate = function(dbName, options) {
 						if(!res.locals.page) {
 							res.locals.page = {}
 						}
+
 						res.locals.page.title = item.title
+						if(item.socialMediaSummary) {
+							res.locals.page.description = item.socialMediaSummary
+						}
+						if(item.socialImg) {
+							res.locals.page.image = item.socialImg
+						}
+
 						res.locals.newsTitle = item.title
 						res.locals.newsTypes = newsTypes
 						newsTypes.sort((one, two) => {
@@ -111,6 +119,7 @@ let integrate = function(dbName, options) {
 						else {
 							req.url = '/news-item-page'
 						}
+						
 						next()
 						return
 					}
